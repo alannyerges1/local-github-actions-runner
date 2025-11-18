@@ -9,7 +9,6 @@ on:
 jobs:
   build-and-test:
     runs-on: self-hosted
-
     env:
       APP_ENV: "ci"
       APP_SECRET_TOKEN: ${{ secrets.APP_SECRET_TOKEN }}
