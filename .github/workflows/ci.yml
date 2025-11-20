@@ -15,56 +15,67 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Set up Node for normal npm tests
+      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # Install dependencies for regular tests
+      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Run Jest tests on the host (quick feedback)
+      # Run Jest tests
       - name: Run Jest tests
         run: npm test
 
-      #  Build Docker image
+      # Build Docker image
       - name: Build Docker image
         run: docker build -t local-ci-app:ci .
 
-      #  Run tests inside Docker container
+      # Run tests inside the Docker container
       - name: Run tests inside Docker container
-        run: |
-          docker run --rm local-ci-app:ci npm test
+        run: docker run --rm local-ci-app:ci npm test
 
-      #  Save Docker image as artifact
-      - name: Save Docker image as tarball artifact
+      # Save Docker image to tar
+      - name: Save Docker image
         run: docker save local-ci-app:ci -o local-ci-app.tar
 
+      # Upload image artifact
       - name: Upload Docker image artifact
         uses: actions/upload-artifact@v4
         with:
           name: local-ci-app-image
           path: local-ci-app.tar
 
+
   deploy:
     needs: build-test-docker
     runs-on: self-hosted
 
     steps:
+      # Download artifact
       - name: Download Docker image artifact
         uses: actions/download-artifact@v4
         with:
           name: local-ci-app-image
           path: ./image
 
+      # Load the image
       - name: Load Docker image
         run: docker load -i ./image/local-ci-app.tar
 
-      - name: Stop existing container (if running)
+      # IMPORTANT: Remove old container (manual or compose-created)
+      - name: Force remove old container if exists
         run: |
-          try { docker compose down } catch { Write-Host "No containers to stop" }
+          docker rm -f local-ci-app 2>$nul
+          Write-Host "Old container removed (if existed)"
 
+      # Bring down old compose stack
+      - name: Bring down existing compose (ignore errors)
+        run: |
+          try { docker compose down } catch { Write-Host "No compose stack to stop" }
+
+      # Deploy new container using compose
       - name: Start updated container
         run: docker compose up -d
