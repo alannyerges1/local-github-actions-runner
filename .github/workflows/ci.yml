@@ -29,21 +29,42 @@ jobs:
       - name: Run Jest tests
         run: npm test
 
-      # 🔥 Build Docker image
+      #  Build Docker image
       - name: Build Docker image
         run: docker build -t local-ci-app:ci .
 
-      # 🧪 Run tests inside Docker container
+      #  Run tests inside Docker container
       - name: Run tests inside Docker container
         run: |
           docker run --rm local-ci-app:ci npm test
 
-      # 📦 Save Docker image as artifact (optional but recommended)
+      #  Save Docker image as artifact
       - name: Save Docker image as tarball artifact
         run: docker save local-ci-app:ci -o local-ci-app.tar
 
       - name: Upload Docker image artifact
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
+          name: local-ci-app-image
           path: local-ci-app.tar
+
+  deploy:
+    needs: build-test-docker
+    runs-on: self-hosted
+
+    steps:
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: local-ci-app-image
+          path: ./image
+
+      - name: Load Docker image
+        run: docker load -i ./image/local-ci-app.tar
+
+      - name: Stop existing container (if running)
+        run: |
+          docker compose down || true
+
+      - name: Start updated container
+        run: docker compose up -d
