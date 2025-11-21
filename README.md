@@ -5,15 +5,15 @@ This project builds, tests, packages, and automatically redeploy an application 
 
 
 ### CI Pipeline 
-- Runs on a self-hosted Windows GitHub Actions runner
-- Installs dependencies (`npm install`)
-- Executes automated unit tests with **Jest**
-- Builds a production-ready **Docker image**
-- Runs tests **inside the container** for full environment validation
-- Saves and uploads Docker images as CI artifacts
+= Runs on a self-hosted Windows GitHub Actions runner
+= Installs dependencies (`npm install`)
+= Executes automated unit tests with **Jest**
+= Builds a production-ready **Docker image**
+= Runs tests **inside the container** for full environment validation
+= Saves and uploads Docker images as CI artifacts
 
 ###  **CD Pipeline**
-- Downloads the latest Docker image artifact
-- Removes old containers safely
-- Uses **Docker Compose** to deploy the updated application
-- Automatically restarts the app with zero manual intervention
+= Downloads the latest Docker image artifact
+= Removes old containers safely
+= Uses **Docker Compose** to deploy the updated application
+= Automatically restarts the app with zero manual intervention
